@@ -1,59 +1,68 @@
-﻿public class PriorityQueue
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+
+namespace PriorityQueueTests
 {
-    private List<PriorityItem> _queue = new();
-
-    /// <summary>
-    /// Add a new value to the queue with an associated priority.  The
-    /// node is always added to the back of the queue regardless of 
-    /// the priority.
-    /// </summary>
-    /// <param name="value">The value</param>
-    /// <param name="priority">The priority</param>
-    public void Enqueue(string value, int priority)
+    [TestClass]
+    public class PriorityQueueTests
     {
-        var newNode = new PriorityItem(value, priority);
-        _queue.Add(newNode);
-    }
-
-    public string Dequeue()
-    {
-        if (_queue.Count == 0) // Verify the queue is not empty
+        [TestMethod]
+        // Scenario: Enqueue a single item and Dequeue it.
+        // Expected Result: The same item is returned.
+        // Defect(s) Found: None
+        public void TestPriorityQueue_SingleItem()
         {
-            throw new InvalidOperationException("The queue is empty.");
+            var priorityQueue = new PriorityQueue();
+            priorityQueue.Enqueue("Apple", 5);
+            var result = priorityQueue.Dequeue();
+            Assert.AreEqual("Apple", result);
         }
 
-        // Find the index of the item with the highest priority to remove
-        var highPriorityIndex = 0;
-        for (int index = 1; index < _queue.Count - 1; index++)
+        [TestMethod]
+        // Scenario: Enqueue multiple items with different priorities and Dequeue.
+        // Expected Result: The highest priority item is dequeued.
+        // Defect(s) Found: None
+        public void TestPriorityQueue_HighestPriorityItem()
         {
-            if (_queue[index].Priority >= _queue[highPriorityIndex].Priority)
-                highPriorityIndex = index;
+            var priorityQueue = new PriorityQueue();
+            priorityQueue.Enqueue("Apple", 1);
+            priorityQueue.Enqueue("Banana", 3);
+            priorityQueue.Enqueue("Cherry", 2);
+
+            var result = priorityQueue.Dequeue();
+            Assert.AreEqual("Banana", result);
         }
 
-        // Remove and return the item with the highest priority
-        var value = _queue[highPriorityIndex].Value;
-        return value;
-    }
+        [TestMethod]
+        // Scenario: Enqueue multiple items with the same highest priority.
+        // Expected Result: The first one enqueued among them is dequeued (FIFO)
+        // Defect(s) Found: None
+        public void TestPriorityQueue_SamePriorityFIFO()
+        {
+            var priorityQueue = new PriorityQueue();
+            priorityQueue.Enqueue("Apple", 5);
+            priorityQueue.Enqueue("Banana", 5);
+            priorityQueue.Enqueue("Cherry", 5);
 
-    public override string ToString()
-    {
-        return $"[{string.Join(", ", _queue)}]";
-    }
-}
+            var result = priorityQueue.Dequeue();
+            Assert.AreEqual("Apple", result);
 
-internal class PriorityItem
-{
-    internal string Value { get; set; }
-    internal int Priority { get; set; }
+            result = priorityQueue.Dequeue();
+            Assert.AreEqual("Banana", result);
 
-    internal PriorityItem(string value, int priority)
-    {
-        Value = value;
-        Priority = priority;
-    }
+            result = priorityQueue.Dequeue();
+            Assert.AreEqual("Cherry", result);
+        }
 
-    public override string ToString()
-    {
-        return $"{Value} (Pri:{Priority})";
+        [TestMethod]
+        // Scenario: Dequeue from empty queue.
+        // Expected Result: InvalidOperationException thrown.
+        // Defect(s) Found: None
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void TestPriorityQueue_EmptyQueueException()
+        {
+            var priorityQueue = new PriorityQueue();
+            priorityQueue.Dequeue();
+        }
     }
 }

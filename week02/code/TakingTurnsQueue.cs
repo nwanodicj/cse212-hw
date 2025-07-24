@@ -20,8 +20,20 @@ public class TakingTurnsQueue
     /// <param name="turns">Number of turns remaining</param>
     public void AddPerson(string name, int turns)
     {
-        var person = new Person(name, turns);
-        _people.Enqueue(person);
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Name cannot be null or empty.", nameof(name)); // Ensure name is not null or empty
+        }
+        if (turns < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(turns), "Turns must be 0 or greater."); // Ensure turns is not negative
+        }
+        // Create a new person with the provided name and turns, then add them to the queue
+        // Note: The Person class should be defined elsewhere in your codebase.
+        Person person = new(name, turns); // Assuming Person has a constructor that takes name and turns
+        _people.Enqueue(person); // Add the person to the queue
+        
+        
     }
 
     /// <summary>
@@ -39,11 +51,30 @@ public class TakingTurnsQueue
         }
         else
         {
+            // Get the next person in the queue
+            // If they have no turns left, then do not add them back to the queue.
+            // If they have turns left, then decrement their turns and add them back to the queue.
+            // Problem:
+            // In the original code we did not include the logic to handle infinite turns.
+            // Base on the requirement, if turns is 0 or less, then they have infinite turns.
             Person person = _people.Dequeue();
             if (person.Turns > 1)
             {
-                person.Turns -= 1;
+                person.Turns--; // Decrement and re-enqueue
                 _people.Enqueue(person);
+                //person.Turns -= 1;
+                //_people.Enqueue(person);
+            }
+            // To fix the problem: We have to implement the logic to handle infinite turns, we can check if the turns is 0 or less
+            // If turns is 0 or less, then they have infinite turns and will stay in the queuw forever
+            else if (person.Turns <= 0)
+            {
+                // Infinite turns — re-enqueue without modifying turns
+                // This means they will stay in the queue forever
+                /*person.Turns = int.MaxValue; // Set to a large value to represent infinite turns
+                // Note: This is a workaround to represent infinite turns, you can also choose to not modify the turns at all
+                // but this way it is clear that they have infinite turns.*/
+                _people.Enqueue(person); // Re-enqueue the person with infinite turns
             }
 
             return person;
